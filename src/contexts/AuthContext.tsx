@@ -66,7 +66,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (authError) throw authError;
 
-    if (authData.user) {
+    if (authData.user && authData.session) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const { error: profileError } = await supabase
         .from('users')
         .insert({
@@ -78,7 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           idioma_preferido: 'en',
         });
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw new Error(`Registration failed: ${profileError.message}`);
+      }
 
       await loadUserProfile(authData.user.id);
     }
