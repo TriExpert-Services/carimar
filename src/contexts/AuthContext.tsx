@@ -10,6 +10,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, nombre: string, telefono?: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  reloadProfile: () => Promise<void>;
   isAdmin: boolean;
   isClient: boolean;
 }
@@ -47,14 +48,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const loadUserProfile = async (userId: string) => {
+    console.log('Loading profile for user:', userId);
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
 
+    console.log('User profile data:', data);
+    console.log('User profile error:', error);
+
     if (data && !error) {
       setUser(data as User);
+      console.log('User role set to:', data.role);
+    } else {
+      console.error('Failed to load user profile:', error);
     }
   };
 
@@ -105,11 +113,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(null);
   };
 
+  const reloadProfile = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await loadUserProfile(session.user.id);
+    }
+  };
+
   const isAdmin = user?.role === 'admin';
   const isClient = user?.role === 'client';
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, isAdmin, isClient }}>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, reloadProfile, isAdmin, isClient }}>
       {children}
     </AuthContext.Provider>
   );

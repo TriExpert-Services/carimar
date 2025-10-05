@@ -11,7 +11,9 @@ interface HeaderProps {
 export const Header = ({ onNavigate, currentSection }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
-  const { user, signOut } = useAuth();
+  const { user, signOut, reloadProfile } = useAuth();
+
+  console.log('Current user in Header:', user);
 
   const navItems = [
     { id: 'home', label: t('nav.home') },
@@ -77,6 +79,13 @@ export const Header = ({ onNavigate, currentSection }: HeaderProps) => {
 
             {user ? (
               <>
+                <button
+                  onClick={reloadProfile}
+                  className="px-3 py-2 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors border border-blue-400/30 rounded-lg"
+                  title="Reload Profile"
+                >
+                  Reload
+                </button>
                 <button
                   onClick={() => onNavigate(user.role === 'admin' ? 'admin-dashboard' : 'client-dashboard')}
                   className="px-4 py-2 text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
