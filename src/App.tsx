@@ -13,6 +13,7 @@ import { Contact } from './components/Contact';
 import { Auth } from './components/Auth';
 import { ClientDashboard } from './components/ClientDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { PromotionalPopup } from './components/PromotionalPopup';
 
 function AppContent() {
   const [currentSection, setCurrentSection] = useState('home');
@@ -77,12 +78,14 @@ function AppContent() {
   };
 
   const showFooter = !['login', 'client-dashboard', 'admin-dashboard'].includes(currentSection);
+  const showPromo = !user && ['home', 'services', 'about'].includes(currentSection);
 
   return (
     <div className="min-h-screen bg-white">
       <Header onNavigate={handleNavigate} currentSection={currentSection} />
       <main className="pt-16">{renderSection()}</main>
       {showFooter && <Footer onNavigate={handleNavigate} />}
+      {showPromo && <PromotionalPopup onNavigate={handleNavigate} />}
     </div>
   );
 }
