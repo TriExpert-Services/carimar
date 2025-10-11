@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking } from '../types';
 import { formatCurrency } from '../utils/pricing';
+import { ClientInvoices } from './ClientInvoices';
 
 interface ClientDashboardProps {
   onNavigate: (section: string) => void;
@@ -189,6 +190,16 @@ export const ClientDashboard = ({ onNavigate }: ClientDashboardProps) => {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-[2.5rem] shadow-xl p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <FileText className="w-7 h-7 text-blue-600" />
+              My Invoices
+            </h2>
+            <ClientInvoices />
           </div>
         </div>
       </div>

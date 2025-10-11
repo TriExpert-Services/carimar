@@ -14,10 +14,11 @@ import { EmployeesManager } from './EmployeesManager';
 import { WorkAssignment } from './WorkAssignment';
 import { DailyRoutes } from './DailyRoutes';
 import { WorkProgressTracking } from './WorkProgressTracking';
+import { InvoiceManager } from './InvoiceManager';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services' | 'employees' | 'assignments' | 'routes' | 'progress'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services' | 'employees' | 'assignments' | 'routes' | 'progress' | 'invoices'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -202,6 +203,17 @@ export const AdminDashboard = () => {
             Progress
           </button>
           <button
+            onClick={() => setActiveTab('invoices')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'invoices'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            Invoices
+          </button>
+          <button
             onClick={() => setActiveTab('company')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === 'company'
@@ -254,6 +266,8 @@ export const AdminDashboard = () => {
           <DailyRoutes />
         ) : activeTab === 'progress' ? (
           <WorkProgressTracking />
+        ) : activeTab === 'invoices' ? (
+          <InvoiceManager />
         ) : (
           <>
             <div className="grid md:grid-cols-4 gap-6 mb-8">
