@@ -3,8 +3,10 @@ import { Calculator, CheckCircle, TrendingDown } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import { Service, PropertyType, Frequency } from '../types';
+import { Service, PropertyType, Frequency, ChecklistFrequency } from '../types';
 import { calculatePrice, formatCurrency, PricingCalculation } from '../utils/pricing';
+import { saveQuoteChecklistSelections } from '../utils/checklistHelpers';
+import { ChecklistSelector } from './ChecklistSelector';
 
 interface QuoteFormProps {
   onNavigate: (section: string) => void;
@@ -31,6 +33,7 @@ export const QuoteForm = ({ onNavigate }: QuoteFormProps) => {
     specialInstructions: '',
   });
 
+  const [selectedChecklistItems, setSelectedChecklistItems] = useState<string[]>([]);
   const [calculation, setCalculation] = useState<PricingCalculation | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -94,6 +97,12 @@ export const QuoteForm = ({ onNavigate }: QuoteFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (selectedChecklistItems.length === 0) {
+      alert('Please select at least one service task from the checklist.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -116,9 +125,16 @@ export const QuoteForm = ({ onNavigate }: QuoteFormProps) => {
         notas_cliente: formData.specialInstructions || null,
       };
 
-      const { error } = await supabase.from('quotes').insert(quoteData);
+      const { data: newQuote, error } = await supabase.from('quotes').insert(quoteData).select().single();
 
       if (error) throw error;
+
+      if (newQuote && selectedChecklistItems.length > 0) {
+        const selections = selectedChecklistItems.map(itemId => ({
+          checklistItemId: itemId,
+        }));
+        await saveQuoteChecklistSelections(newQuote.id, selections);
+      }
 
       setSubmitted(true);
     } catch (error) {
@@ -361,7 +377,20 @@ export const QuoteForm = ({ onNavigate }: QuoteFormProps) => {
                     className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                   />
                 </div>
+              </div>
 
+              {formData.serviceType && formData.frequency && (
+                <div className="mt-8">
+                  <ChecklistSelector
+                    serviceType={formData.serviceType}
+                    frequency={formData.frequency as ChecklistFrequency}
+                    selectedItems={selectedChecklistItems}
+                    onSelectionChange={setSelectedChecklistItems}
+                  />
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-6 mt-8">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     {t('quote.form.specialInstructions')}
