@@ -38,16 +38,72 @@ export const EmployeesManager = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (editingId) {
-      await supabase.from('employees').update(formData).eq('id', editingId);
-      setEditingId(null);
-    } else {
-      await supabase.from('employees').insert([formData]);
-      setShowAddForm(false);
-    }
+    try {
+      if (editingId) {
+        await supabase.from('employees').update(formData).eq('id', editingId);
+        setEditingId(null);
+        alert('Employee updated successfully!');
+      } else {
+        if (!formData.telefono) {
+          alert('Phone number is required to create login credentials.');
+          return;
+        }
 
-    resetForm();
-    loadData();
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.telefono,
+          options: {
+            data: {
+              nombre: formData.nombre,
+              role: 'employee',
+            },
+          },
+        });
+
+        if (authError) throw authError;
+
+        if (!authData.user) {
+          throw new Error('Failed to create user account');
+        }
+
+        const { error: userError } = await supabase.from('users').insert([
+          {
+            id: authData.user.id,
+            email: formData.email,
+            role: 'employee',
+            nombre: formData.nombre,
+            telefono: formData.telefono,
+            idioma_preferido: 'en',
+          },
+        ]);
+
+        if (userError) throw userError;
+
+        const { error: employeeError } = await supabase.from('employees').insert([
+          {
+            ...formData,
+            user_id: authData.user.id,
+          },
+        ]);
+
+        if (employeeError) throw employeeError;
+
+        alert(
+          `Employee created successfully!\n\n` +
+          `Login credentials:\n` +
+          `Email: ${formData.email}\n` +
+          `Password: ${formData.telefono}\n\n` +
+          `The employee can now login and should change their password after first login.`
+        );
+        setShowAddForm(false);
+      }
+
+      resetForm();
+      loadData();
+    } catch (error: any) {
+      console.error('Error saving employee:', error);
+      alert('Error: ' + error.message);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -76,67 +132,6 @@ export const EmployeesManager = () => {
       .update({ active: !employee.active })
       .eq('id', employee.id);
     loadData();
-  };
-
-  const createUserAccount = async (employee: Employee) => {
-    if (employee.user_id) {
-      alert('This employee already has a user account.');
-      return;
-    }
-
-    const password = prompt(
-      `Create login account for ${employee.nombre}?\n\nEnter a temporary password (employee should change it after first login):`
-    );
-
-    if (!password || password.length < 6) {
-      alert('Password must be at least 6 characters long.');
-      return;
-    }
-
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: employee.email,
-        password: password,
-        options: {
-          data: {
-            nombre: employee.nombre,
-            role: 'employee',
-          },
-        },
-      });
-
-      if (authError) throw authError;
-
-      if (!authData.user) {
-        throw new Error('Failed to create user account');
-      }
-
-      const { error: userError } = await supabase.from('users').insert([
-        {
-          id: authData.user.id,
-          email: employee.email,
-          role: 'employee',
-          nombre: employee.nombre,
-          telefono: employee.telefono,
-          idioma_preferido: 'en',
-        },
-      ]);
-
-      if (userError) throw userError;
-
-      await supabase
-        .from('employees')
-        .update({ user_id: authData.user.id })
-        .eq('id', employee.id);
-
-      alert(
-        `Login account created successfully!\n\nEmail: ${employee.email}\nPassword: ${password}\n\nEmployee can now login to access their dashboard.`
-      );
-      loadData();
-    } catch (error: any) {
-      console.error('Error creating user account:', error);
-      alert('Error creating user account: ' + error.message);
-    }
   };
 
   const resetForm = () => {
@@ -408,20 +403,10 @@ export const EmployeesManager = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  {employee.user_id ? (
-                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-medium">
-                      <CheckCircle className="w-4 h-4" />
-                      Has Login
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => createUserAccount(employee)}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-all text-sm font-medium"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      Create Login
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-medium">
+                    <CheckCircle className="w-4 h-4" />
+                    Login Enabled
+                  </div>
                   <button
                     onClick={() => toggleActive(employee)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${

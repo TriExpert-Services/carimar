@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { ClipboardCheck, Calendar, MapPin, Camera, Navigation as NavigationIcon, Clock, User, AlertCircle } from 'lucide-react';
+import { ClipboardCheck, Calendar, MapPin, Camera, Navigation as NavigationIcon, Clock, User, AlertCircle, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Booking, User as UserType, Employee } from '../types';
 import { formatCurrency } from '../utils/pricing';
 import { WorkDetails } from './WorkDetails';
+import { ProfileSettings } from './ProfileSettings';
 
 interface BookingWithDetails extends Booking {
   user?: UserType;
@@ -17,6 +18,7 @@ export const EmployeeDashboard = () => {
   const [selectedBooking, setSelectedBooking] = useState<BookingWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'in_progress'>('all');
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -113,6 +115,22 @@ export const EmployeeDashboard = () => {
     );
   }
 
+  if (showSettings) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <button
+            onClick={() => setShowSettings(false)}
+            className="mb-6 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            ← Back to Dashboard
+          </button>
+          <ProfileSettings />
+        </div>
+      </section>
+    );
+  }
+
   if (selectedBooking) {
     return (
       <WorkDetails
@@ -136,16 +154,25 @@ export const EmployeeDashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-2xl flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-clip-text text-transparent">
+                  Welcome, {employee.nombre}!
+                </h1>
+                <p className="text-gray-600">Employee Dashboard - Today's Schedule</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-clip-text text-transparent">
-                Welcome, {employee.nombre}!
-              </h1>
-              <p className="text-gray-600">Employee Dashboard - Today's Schedule</p>
-            </div>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-xl hover:shadow-lg transition-all font-semibold text-gray-700"
+            >
+              <Settings className="w-5 h-5" />
+              Settings
+            </button>
           </div>
         </div>
 
