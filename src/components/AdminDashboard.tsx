@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail, Briefcase } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking, User } from '../types';
@@ -8,10 +8,11 @@ import { GalleryManager } from './GalleryManager';
 import { CompanySettings } from './CompanySettings';
 import { OrdersCalendar } from './OrdersCalendar';
 import { SMTPSettings } from './SMTPSettings';
+import { ServicesManager } from './ServicesManager';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -106,6 +107,17 @@ export const AdminDashboard = () => {
             Orders
           </button>
           <button
+            onClick={() => setActiveTab('services')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'services'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Briefcase className="w-5 h-5" />
+            Services
+          </button>
+          <button
             onClick={() => setActiveTab('company')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === 'company'
@@ -148,6 +160,8 @@ export const AdminDashboard = () => {
           <OrdersCalendar />
         ) : activeTab === 'smtp' ? (
           <SMTPSettings />
+        ) : activeTab === 'services' ? (
+          <ServicesManager />
         ) : (
           <>
             <div className="grid md:grid-cols-4 gap-6 mb-8">
