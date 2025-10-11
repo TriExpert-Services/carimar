@@ -16,6 +16,8 @@ import { ClientDashboard } from './components/ClientDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { EmployeeDashboard } from './components/EmployeeDashboard';
 import { PromotionalPopup } from './components/PromotionalPopup';
+import { PrivacyPolicy } from './components/PrivacyPolicy';
+import { TermsOfService } from './components/TermsOfService';
 
 function AppContent() {
   const [currentSection, setCurrentSection] = useState('home');
@@ -82,6 +84,8 @@ function AppContent() {
         {currentSection === 'gallery' && <Gallery />}
         {currentSection === 'testimonials' && <Testimonials />}
         {currentSection === 'contact' && <Contact />}
+        {currentSection === 'privacy' && <PrivacyPolicy onNavigate={handleNavigate} />}
+        {currentSection === 'terms' && <TermsOfService onNavigate={handleNavigate} />}
       </>
     );
   };
