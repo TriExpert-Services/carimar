@@ -17,6 +17,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getErrorMessage = (error: string): string => {
+  const errorMap: Record<string, string> = {
+    'Invalid login credentials': 'Invalid email or password. Please try again.',
+    'Email not confirmed': 'Please confirm your email address before logging in.',
+    'User already registered': 'This email is already registered. Please sign in instead.',
+    'Password should be at least 6 characters': 'Password must be at least 6 characters long.',
+    'Unable to validate email address: invalid format': 'Please enter a valid email address.',
+    'signup_disabled': 'New registrations are currently disabled.',
+    'over_email_send_rate_limit': 'Too many requests. Please wait a moment and try again.',
+    'email_exists': 'This email is already registered. Please sign in instead.',
+  };
+
+  for (const [key, message] of Object.entries(errorMap)) {
+    if (error.toLowerCase().includes(key.toLowerCase())) {
+      return message;
+    }
+  }
+
+  return error || 'An unexpected error occurred. Please try again.';
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -67,43 +88,104 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, nombre: string, telefono?: string) => {
+    console.log('Starting signup process for:', email);
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (authError) throw authError;
-
-    if (authData.user && authData.session) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email,
-          nombre,
-          telefono,
-          role: 'client',
-          idioma_preferido: 'en',
-        });
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        throw new Error(`Registration failed: ${profileError.message}`);
-      }
-
-      await loadUserProfile(authData.user.id);
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      throw new Error(getErrorMessage(authError.message));
     }
+
+    if (!authData.user) {
+      throw new Error('Registration failed. Please try again.');
+    }
+
+    console.log('Auth user created:', authData.user.id);
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    let retries = 3;
+    let profileCreated = false;
+    let lastError = null;
+
+    while (retries > 0 && !profileCreated) {
+      try {
+        console.log(`Attempting to create profile (${4 - retries}/3)...`);
+
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: authData.user.id,
+            email,
+            nombre,
+            telefono,
+            role: 'client',
+            idioma_preferido: 'en',
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          lastError = profileError;
+
+          if (profileError.code === '23505') {
+            console.log('Profile already exists, attempting to load...');
+            profileCreated = true;
+            break;
+          }
+
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        } else {
+          console.log('Profile created successfully');
+          profileCreated = true;
+        }
+      } catch (err: any) {
+        console.error('Unexpected error during profile creation:', err);
+        lastError = err;
+        retries--;
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+
+    if (!profileCreated && lastError) {
+      console.error('Failed to create profile after retries:', lastError);
+      const errorMsg = (lastError as any)?.message || 'Unable to create user profile';
+      throw new Error(`Registration failed: ${getErrorMessage(errorMsg)}`);
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await loadUserProfile(authData.user.id);
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    console.log('Starting sign in process for:', email);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Sign in error:', error);
+      throw new Error(getErrorMessage(error.message));
+    }
+
+    if (!data.user) {
+      throw new Error('Sign in failed. Please try again.');
+    }
+
+    console.log('User signed in successfully:', data.user.id);
+
+    await new Promise(resolve => setTimeout(resolve, 200));
+    await loadUserProfile(data.user.id);
   };
 
   const signOut = async () => {
