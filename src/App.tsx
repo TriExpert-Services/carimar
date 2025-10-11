@@ -14,6 +14,7 @@ import { Contact } from './components/Contact';
 import { Auth } from './components/Auth';
 import { ClientDashboard } from './components/ClientDashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { EmployeeDashboard } from './components/EmployeeDashboard';
 import { PromotionalPopup } from './components/PromotionalPopup';
 
 function AppContent() {
@@ -29,7 +30,10 @@ function AppContent() {
       const shouldRedirect = currentSection === 'login' || currentSection === 'home';
 
       if (shouldRedirect) {
-        const targetSection = user.role === 'admin' ? 'admin-dashboard' : 'client-dashboard';
+        let targetSection = 'client-dashboard';
+        if (user.role === 'admin') targetSection = 'admin-dashboard';
+        else if (user.role === 'employee') targetSection = 'employee-dashboard';
+
         if (currentSection !== targetSection) {
           setCurrentSection(targetSection);
         }
@@ -65,6 +69,10 @@ function AppContent() {
       return <AdminDashboard />;
     }
 
+    if (currentSection === 'employee-dashboard' && user?.role === 'employee') {
+      return <EmployeeDashboard />;
+    }
+
     return (
       <>
         {currentSection === 'home' && <Hero onNavigate={handleNavigate} />}
@@ -78,7 +86,7 @@ function AppContent() {
     );
   };
 
-  const showFooter = !['login', 'client-dashboard', 'admin-dashboard'].includes(currentSection);
+  const showFooter = !['login', 'client-dashboard', 'admin-dashboard', 'employee-dashboard'].includes(currentSection);
   const showPromo = !user && ['home', 'services', 'about'].includes(currentSection);
 
   return (

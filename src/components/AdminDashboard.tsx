@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail, Briefcase, UserCheck, Navigation } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail, Briefcase, UserCheck, Navigation, Activity } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking, User } from '../types';
 import { formatCurrency } from '../utils/pricing';
+import { createBookingChecklist } from '../utils/checklistHelpers';
 import { GalleryManager } from './GalleryManager';
 import { CompanySettings } from './CompanySettings';
 import { OrdersCalendar } from './OrdersCalendar';
@@ -12,10 +13,11 @@ import { ServicesManager } from './ServicesManager';
 import { EmployeesManager } from './EmployeesManager';
 import { WorkAssignment } from './WorkAssignment';
 import { DailyRoutes } from './DailyRoutes';
+import { WorkProgressTracking } from './WorkProgressTracking';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services' | 'employees' | 'assignments' | 'routes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services' | 'employees' | 'assignments' | 'routes' | 'progress'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -58,7 +60,11 @@ export const AdminDashboard = () => {
       estimated_duration: 120,
     };
 
-    await supabase.from('bookings').insert([bookingData]);
+    const { data: newBooking } = await supabase.from('bookings').insert([bookingData]).select().single();
+
+    if (newBooking) {
+      await createBookingChecklist(newBooking.id, quoteId);
+    }
 
     await supabase.from('notifications').insert([
       {
@@ -185,6 +191,17 @@ export const AdminDashboard = () => {
             Routes
           </button>
           <button
+            onClick={() => setActiveTab('progress')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'progress'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Activity className="w-5 h-5" />
+            Progress
+          </button>
+          <button
             onClick={() => setActiveTab('company')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === 'company'
@@ -235,6 +252,8 @@ export const AdminDashboard = () => {
           <WorkAssignment />
         ) : activeTab === 'routes' ? (
           <DailyRoutes />
+        ) : activeTab === 'progress' ? (
+          <WorkProgressTracking />
         ) : (
           <>
             <div className="grid md:grid-cols-4 gap-6 mb-8">

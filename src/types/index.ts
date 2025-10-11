@@ -1,6 +1,6 @@
 export type Language = 'en' | 'es';
 
-export type UserRole = 'admin' | 'client' | 'guest';
+export type UserRole = 'admin' | 'client' | 'employee' | 'guest';
 
 export interface User {
   id: string;
@@ -210,5 +210,76 @@ export interface EmailQueue {
   last_error?: string;
   scheduled_at: string;
   sent_at?: string;
+  created_at: string;
+}
+
+export type ChecklistFrequency = 'everyday' | 'weekly' | 'monthly' | 'all';
+
+export interface ChecklistTemplate {
+  id: string;
+  service_type: string;
+  frequency: ChecklistFrequency;
+  room_type: string;
+  name_en: string;
+  name_es: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  template_id: string;
+  name_en: string;
+  name_es: string;
+  description_en?: string;
+  description_es?: string;
+  order_index: number;
+  is_required: boolean;
+  created_at: string;
+}
+
+export interface QuoteChecklistSelection {
+  id: string;
+  quote_id: string;
+  checklist_item_id: string;
+  selected: boolean;
+  notes?: string;
+  created_at: string;
+}
+
+export interface BookingChecklistCompletion {
+  id: string;
+  booking_id: string;
+  checklist_item_id: string;
+  completed: boolean;
+  completed_at?: string;
+  employee_notes?: string;
+  quality_rating?: number;
+  created_at: string;
+}
+
+export type PhotoType = 'before' | 'after';
+
+export interface BookingPhoto {
+  id: string;
+  booking_id: string;
+  photo_type: PhotoType;
+  photo_url: string;
+  room_area?: string;
+  uploaded_by: string;
+  created_at: string;
+}
+
+export type LocationType = 'start' | 'end';
+
+export interface BookingLocation {
+  id: string;
+  booking_id: string;
+  location_type: LocationType;
+  latitude: number;
+  longitude: number;
+  recorded_at: string;
+  accuracy?: number;
   created_at: string;
 }
