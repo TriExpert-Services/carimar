@@ -62,6 +62,12 @@ export interface Booking {
   precio_final: number;
   metodo_pago?: PaymentMethod;
   pago_completado: boolean;
+  employee_id?: string;
+  service_address?: string;
+  estimated_duration?: number;
+  employee_notes?: string;
+  latitude?: number;
+  longitude?: number;
   created_at: string;
 }
 
@@ -130,12 +136,37 @@ export interface CompanyInfo {
   updated_at: string;
 }
 
+export interface Employee {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono: string;
+  skills: string[];
+  hourly_rate: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkRoute {
+  id: string;
+  employee_id: string;
+  route_date: string;
+  booking_ids: string[];
+  total_distance: number;
+  estimated_duration: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type NotificationType =
   | 'quote_received'
   | 'quote_approved'
   | 'quote_rejected'
   | 'booking_confirmed'
   | 'booking_reminder'
+  | 'booking_assigned'
   | 'payment_received'
   | 'system';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail, Briefcase } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail, Briefcase, UserCheck, Navigation } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking, User } from '../types';
@@ -9,10 +9,13 @@ import { CompanySettings } from './CompanySettings';
 import { OrdersCalendar } from './OrdersCalendar';
 import { SMTPSettings } from './SMTPSettings';
 import { ServicesManager } from './ServicesManager';
+import { EmployeesManager } from './EmployeesManager';
+import { WorkAssignment } from './WorkAssignment';
+import { DailyRoutes } from './DailyRoutes';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp' | 'services' | 'employees' | 'assignments' | 'routes'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -36,7 +39,37 @@ export const AdminDashboard = () => {
   };
 
   const approveQuote = async (quoteId: string) => {
+    const quote = quotes.find(q => q.id === quoteId);
+    if (!quote) return;
+
+    const user = users.find(u => u.id === quote.user_id);
+
     await supabase.from('quotes').update({ estado: 'approved' }).eq('id', quoteId);
+
+    const bookingData = {
+      quote_id: quoteId,
+      user_id: quote.user_id,
+      fecha_servicio: quote.fecha_preferida || new Date().toISOString().split('T')[0],
+      hora_servicio: quote.hora_preferida || '09:00',
+      estado: 'confirmed' as const,
+      precio_final: quote.precio_estimado,
+      pago_completado: false,
+      service_address: user?.direccion || '',
+      estimated_duration: 120,
+    };
+
+    await supabase.from('bookings').insert([bookingData]);
+
+    await supabase.from('notifications').insert([
+      {
+        user_id: quote.user_id,
+        type: 'quote_approved',
+        title: 'Quote Approved',
+        message: `Your quote for ${quote.tipo_servicio} has been approved and a booking has been created.`,
+        link: '/client-dashboard',
+      },
+    ]);
+
     loadData();
   };
 
@@ -46,6 +79,7 @@ export const AdminDashboard = () => {
   };
 
   const pendingQuotes = quotes.filter((q) => q.estado === 'pending');
+  const approvedQuotes = quotes.filter((q) => q.estado === 'approved');
   const todayBookings = bookings.filter(
     (b) => new Date(b.fecha_servicio).toDateString() === new Date().toDateString()
   );
@@ -118,6 +152,39 @@ export const AdminDashboard = () => {
             Services
           </button>
           <button
+            onClick={() => setActiveTab('employees')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'employees'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            Employees
+          </button>
+          <button
+            onClick={() => setActiveTab('assignments')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'assignments'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <UserCheck className="w-5 h-5" />
+            Assignments
+          </button>
+          <button
+            onClick={() => setActiveTab('routes')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'routes'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Navigation className="w-5 h-5" />
+            Routes
+          </button>
+          <button
             onClick={() => setActiveTab('company')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === 'company'
@@ -162,6 +229,12 @@ export const AdminDashboard = () => {
           <SMTPSettings />
         ) : activeTab === 'services' ? (
           <ServicesManager />
+        ) : activeTab === 'employees' ? (
+          <EmployeesManager />
+        ) : activeTab === 'assignments' ? (
+          <WorkAssignment />
+        ) : activeTab === 'routes' ? (
+          <DailyRoutes />
         ) : (
           <>
             <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -207,7 +280,7 @@ export const AdminDashboard = () => {
         </div>
 
         <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-[2.5rem] shadow-xl p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('dashboard.admin.manageQuotes')}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Pending Quotes</h2>
           {pendingQuotes.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No pending quotes</p>
           ) : (
@@ -256,6 +329,43 @@ export const AdminDashboard = () => {
             </div>
           )}
         </div>
+
+        {approvedQuotes.length > 0 && (
+          <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-[2.5rem] shadow-xl p-8 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Approved Quotes</h2>
+            <div className="space-y-4">
+              {approvedQuotes.slice(0, 5).map((quote) => (
+                <div key={quote.id} className="bg-white/40 border border-emerald-200 rounded-2xl p-6">
+                  <div className="flex flex-wrap justify-between items-start gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-bold text-lg text-gray-900">{quote.tipo_servicio}</h3>
+                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          Approved
+                        </span>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-2 text-sm text-gray-600">
+                        <p>Property: {quote.tipo_propiedad}</p>
+                        <p>Size: {quote.metros_cuadrados} sq ft</p>
+                        <p>Frequency: {quote.frecuencia}</p>
+                        <p>Date: {quote.fecha_preferida || 'Not specified'}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="text-2xl font-bold text-emerald-600">
+                        {formatCurrency(quote.precio_estimado)}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-1">
+                        {new Date(quote.updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-[2.5rem] shadow-xl p-8">
