@@ -30,17 +30,14 @@ export const Auth = ({ onNavigate }: AuthProps) => {
     try {
       if (isLogin) {
         await signIn(formData.email, formData.password);
-        onNavigate('home');
       } else {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
         await signUp(formData.email, formData.password, formData.name, formData.phone);
-        onNavigate('client-dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
-    } finally {
       setLoading(false);
     }
   };

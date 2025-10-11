@@ -22,6 +22,19 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentSection]);
 
+  useEffect(() => {
+    if (!loading && user) {
+      const shouldRedirect = currentSection === 'login' || currentSection === 'home';
+
+      if (shouldRedirect) {
+        const targetSection = user.role === 'admin' ? 'admin-dashboard' : 'client-dashboard';
+        if (currentSection !== targetSection) {
+          setCurrentSection(targetSection);
+        }
+      }
+    }
+  }, [user, loading, currentSection]);
+
   const handleNavigate = (section: string) => {
     setCurrentSection(section);
   };
