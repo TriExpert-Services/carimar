@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CompanyProvider } from './contexts/CompanyContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Hero } from './components/Hero';
@@ -93,9 +94,11 @@ function AppContent() {
 function App() {
   return (
     <LanguageProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <CompanyProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </CompanyProvider>
     </LanguageProvider>
   );
 }

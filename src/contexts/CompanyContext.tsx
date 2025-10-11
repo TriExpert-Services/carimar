@@ -1,8 +1,17 @@
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { CompanyInfo } from '../types';
 
-export const useCompanyInfo = () => {
+interface CompanyContextType {
+  companyInfo: CompanyInfo | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
+
+export const CompanyProvider = ({ children }: { children: ReactNode }) => {
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,5 +46,17 @@ export const useCompanyInfo = () => {
     }
   };
 
-  return { companyInfo, loading, error, refetch: loadCompanyInfo };
+  return (
+    <CompanyContext.Provider value={{ companyInfo, loading, error, refetch: loadCompanyInfo }}>
+      {children}
+    </CompanyContext.Provider>
+  );
+};
+
+export const useCompanyInfo = () => {
+  const context = useContext(CompanyContext);
+  if (!context) {
+    throw new Error('useCompanyInfo must be used within CompanyProvider');
+  }
+  return context;
 };

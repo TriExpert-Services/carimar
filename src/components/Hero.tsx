@@ -3,7 +3,7 @@ import { ArrowRight, CheckCircle, MapPin, Users, Award, Sparkles, Droplets } fro
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { HeroImage } from '../types';
-import { useCompanyInfo } from '../hooks/useCompanyInfo';
+import { useCompanyInfo } from '../contexts/CompanyContext';
 
 interface HeroProps {
   onNavigate: (section: string) => void;

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useCompanyInfo } from '../hooks/useCompanyInfo';
+import { useCompanyInfo } from '../contexts/CompanyContext';
 
 export const Contact = () => {
   const { t, language } = useLanguage();

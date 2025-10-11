@@ -1,6 +1,6 @@
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Sparkles } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useCompanyInfo } from '../hooks/useCompanyInfo';
+import { useCompanyInfo } from '../contexts/CompanyContext';
 
 interface FooterProps {
   onNavigate: (section: string) => void;
