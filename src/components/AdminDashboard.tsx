@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking, User } from '../types';
 import { formatCurrency } from '../utils/pricing';
+import { GalleryManager } from './GalleryManager';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -77,7 +79,36 @@ export const AdminDashboard = () => {
           <p className="text-gray-600">{t('dashboard.admin.overview')}</p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="mb-8 flex gap-4">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'overview'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <FileText className="w-5 h-5" />
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('gallery')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'gallery'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Image className="w-5 h-5" />
+            {t('dashboard.admin.manageGallery')}
+          </button>
+        </div>
+
+        {activeTab === 'gallery' ? (
+          <GalleryManager />
+        ) : (
+          <>
+            <div className="grid md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white/60 backdrop-blur-sm border border-gray-200 rounded-[2rem] shadow-xl p-6 hover:shadow-2xl transition-all">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-xl flex items-center justify-center">
@@ -228,6 +259,8 @@ export const AdminDashboard = () => {
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
     </section>
   );

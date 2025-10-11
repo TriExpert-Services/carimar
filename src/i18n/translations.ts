@@ -260,6 +260,15 @@ export const translations = {
       yes: 'Yes',
       no: 'No',
     },
+    gallery: {
+      title: 'Our Work Gallery',
+      subtitle: 'See the transformations we create',
+      before: 'Before',
+      after: 'After',
+      filterByService: 'Filter by Service',
+      allServices: 'All Services',
+      noItems: 'No gallery items found',
+    },
   },
   es: {
     nav: {
@@ -519,6 +528,15 @@ export const translations = {
       upload: 'Subir',
       yes: 'Sí',
       no: 'No',
+    },
+    gallery: {
+      title: 'Galería de Nuestro Trabajo',
+      subtitle: 'Vea las transformaciones que creamos',
+      before: 'Antes',
+      after: 'Después',
+      filterByService: 'Filtrar por Servicio',
+      allServices: 'Todos los Servicios',
+      noItems: 'No se encontraron elementos de galería',
     },
   },
 };
