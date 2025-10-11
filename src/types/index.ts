@@ -109,3 +109,75 @@ export interface HeroImage {
   created_at: string;
   updated_at: string;
 }
+
+export interface CompanyInfo {
+  id: string;
+  company_name: string;
+  phone: string;
+  email: string;
+  address?: string;
+  city: string;
+  state: string;
+  zip_code?: string;
+  business_hours_en: string;
+  business_hours_es: string;
+  facebook_url?: string;
+  instagram_url?: string;
+  twitter_url?: string;
+  service_area_en: string;
+  service_area_es: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type NotificationType =
+  | 'quote_received'
+  | 'quote_approved'
+  | 'quote_rejected'
+  | 'booking_confirmed'
+  | 'booking_reminder'
+  | 'payment_received'
+  | 'system';
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link?: string;
+  read: boolean;
+  created_at: string;
+}
+
+export interface SMTPConfig {
+  id: string;
+  provider: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  from_email: string;
+  from_name: string;
+  use_tls: boolean;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type EmailQueueStatus = 'pending' | 'sending' | 'sent' | 'failed';
+
+export interface EmailQueue {
+  id: string;
+  to_email: string;
+  to_name: string;
+  subject: string;
+  body_html: string;
+  body_text?: string;
+  status: EmailQueueStatus;
+  attempts: number;
+  last_error?: string;
+  scheduled_at: string;
+  sent_at?: string;
+  created_at: string;
+}

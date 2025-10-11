@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCompanyInfo } from '../hooks/useCompanyInfo';
 
 export const Contact = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { companyInfo } = useCompanyInfo();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -139,9 +141,11 @@ export const Contact = () => {
                     <h4 className="font-semibold text-gray-900 mb-1">
                       {t('contact.info.address')}
                     </h4>
-                    <p className="text-gray-600">Tampa, FL</p>
+                    <p className="text-gray-600">
+                      {companyInfo?.city}, {companyInfo?.state}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      {t('hero.servicingArea')}
+                      {language === 'en' ? companyInfo?.service_area_en : companyInfo?.service_area_es}
                     </p>
                   </div>
                 </div>
@@ -155,10 +159,10 @@ export const Contact = () => {
                       {t('contact.info.phone')}
                     </h4>
                     <a
-                      href="tel:+18135551234"
+                      href={`tel:${companyInfo?.phone}`}
                       className="text-blue-600 hover:text-blue-700 transition-colors"
                     >
-                      (813) 555-1234
+                      {companyInfo?.phone}
                     </a>
                   </div>
                 </div>
@@ -172,10 +176,10 @@ export const Contact = () => {
                       {t('contact.info.email')}
                     </h4>
                     <a
-                      href="mailto:info@carimarservices.com"
+                      href={`mailto:${companyInfo?.email}`}
                       className="text-blue-600 hover:text-blue-700 transition-colors"
                     >
-                      info@carimarservices.com
+                      {companyInfo?.email}
                     </a>
                   </div>
                 </div>
@@ -188,7 +192,9 @@ export const Contact = () => {
                     <h4 className="font-semibold text-gray-900 mb-1">
                       {t('contact.info.hours')}
                     </h4>
-                    <p className="text-gray-600">{t('contact.info.hoursValue')}</p>
+                    <p className="text-gray-600">
+                      {language === 'en' ? companyInfo?.business_hours_en : companyInfo?.business_hours_es}
+                    </p>
                     <p className="text-sm text-gray-500 mt-1">Sunday: Closed</p>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, X, Sparkles, Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { NotificationBell } from './NotificationBell';
 
 interface HeaderProps {
   onNavigate: (section: string) => void;
@@ -76,6 +77,8 @@ export const Header = ({ onNavigate, currentSection }: HeaderProps) => {
               <Globe className="w-4 h-4" />
               <span className="text-sm font-medium uppercase">{language}</span>
             </button>
+
+            {user && <NotificationBell />}
 
             {user ? (
               <>

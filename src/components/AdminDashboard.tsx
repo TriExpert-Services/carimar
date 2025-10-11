@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image } from 'lucide-react';
+import { FileText, Calendar, DollarSign, Users, CheckCircle, XCircle, Image, Building2, ClipboardList, Mail } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { supabase } from '../lib/supabase';
 import { Quote, Booking, User } from '../types';
 import { formatCurrency } from '../utils/pricing';
 import { GalleryManager } from './GalleryManager';
+import { CompanySettings } from './CompanySettings';
+import { OrdersCalendar } from './OrdersCalendar';
+import { SMTPSettings } from './SMTPSettings';
 
 export const AdminDashboard = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'overview' | 'gallery'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gallery' | 'company' | 'orders' | 'smtp'>('overview');
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -79,7 +82,7 @@ export const AdminDashboard = () => {
           <p className="text-gray-600">{t('dashboard.admin.overview')}</p>
         </div>
 
-        <div className="mb-8 flex gap-4">
+        <div className="mb-8 flex gap-4 flex-wrap">
           <button
             onClick={() => setActiveTab('overview')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
@@ -92,6 +95,28 @@ export const AdminDashboard = () => {
             Overview
           </button>
           <button
+            onClick={() => setActiveTab('orders')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'orders'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <ClipboardList className="w-5 h-5" />
+            Orders
+          </button>
+          <button
+            onClick={() => setActiveTab('company')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'company'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Building2 className="w-5 h-5" />
+            Company
+          </button>
+          <button
             onClick={() => setActiveTab('gallery')}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
               activeTab === 'gallery'
@@ -102,10 +127,27 @@ export const AdminDashboard = () => {
             <Image className="w-5 h-5" />
             {t('dashboard.admin.manageGallery')}
           </button>
+          <button
+            onClick={() => setActiveTab('smtp')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+              activeTab === 'smtp'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg'
+                : 'bg-white/60 text-gray-700 hover:bg-white'
+            }`}
+          >
+            <Mail className="w-5 h-5" />
+            Email
+          </button>
         </div>
 
         {activeTab === 'gallery' ? (
           <GalleryManager />
+        ) : activeTab === 'company' ? (
+          <CompanySettings />
+        ) : activeTab === 'orders' ? (
+          <OrdersCalendar />
+        ) : activeTab === 'smtp' ? (
+          <SMTPSettings />
         ) : (
           <>
             <div className="grid md:grid-cols-4 gap-6 mb-8">
