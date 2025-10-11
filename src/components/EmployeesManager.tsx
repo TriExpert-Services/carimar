@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Edit2, Trash2, Save, X, Search, DollarSign, Mail, Phone, Briefcase } from 'lucide-react';
+import { Users, Plus, Edit2, Trash2, Save, X, Search, DollarSign, Mail, Phone, Briefcase, UserPlus, CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Employee, Service } from '../types';
 import { formatCurrency } from '../utils/pricing';
@@ -76,6 +76,67 @@ export const EmployeesManager = () => {
       .update({ active: !employee.active })
       .eq('id', employee.id);
     loadData();
+  };
+
+  const createUserAccount = async (employee: Employee) => {
+    if (employee.user_id) {
+      alert('This employee already has a user account.');
+      return;
+    }
+
+    const password = prompt(
+      `Create login account for ${employee.nombre}?\n\nEnter a temporary password (employee should change it after first login):`
+    );
+
+    if (!password || password.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: employee.email,
+        password: password,
+        options: {
+          data: {
+            nombre: employee.nombre,
+            role: 'employee',
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error('Failed to create user account');
+      }
+
+      const { error: userError } = await supabase.from('users').insert([
+        {
+          id: authData.user.id,
+          email: employee.email,
+          role: 'employee',
+          nombre: employee.nombre,
+          telefono: employee.telefono,
+          idioma_preferido: 'en',
+        },
+      ]);
+
+      if (userError) throw userError;
+
+      await supabase
+        .from('employees')
+        .update({ user_id: authData.user.id })
+        .eq('id', employee.id);
+
+      alert(
+        `Login account created successfully!\n\nEmail: ${employee.email}\nPassword: ${password}\n\nEmployee can now login to access their dashboard.`
+      );
+      loadData();
+    } catch (error: any) {
+      console.error('Error creating user account:', error);
+      alert('Error creating user account: ' + error.message);
+    }
   };
 
   const resetForm = () => {
@@ -347,6 +408,20 @@ export const EmployeesManager = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  {employee.user_id ? (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-medium">
+                      <CheckCircle className="w-4 h-4" />
+                      Has Login
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => createUserAccount(employee)}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-xl hover:bg-emerald-200 transition-all text-sm font-medium"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Create Login
+                    </button>
+                  )}
                   <button
                     onClick={() => toggleActive(employee)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${

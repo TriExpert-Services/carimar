@@ -144,6 +144,7 @@ export interface Employee {
   skills: string[];
   hourly_rate: number;
   active: boolean;
+  user_id?: string;
   created_at: string;
   updated_at: string;
 }
