@@ -79,12 +79,15 @@ export const EmployeesManager = () => {
 
         if (userError) throw userError;
 
-        const { error: employeeError } = await supabase.from('employees').insert([
-          {
-            ...formData,
-            user_id: authData.user.id,
-          },
-        ]);
+        const { data: employeeData, error: employeeError } = await supabase.rpc('create_employee_record', {
+          p_user_id: authData.user.id,
+          p_nombre: formData.nombre,
+          p_email: formData.email,
+          p_telefono: formData.telefono,
+          p_skills: formData.skills,
+          p_hourly_rate: formData.hourly_rate,
+          p_active: formData.active,
+        });
 
         if (employeeError) throw employeeError;
 
