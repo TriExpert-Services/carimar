@@ -44,10 +44,11 @@ export const PromotionalPopup = ({ onNavigate }: PromotionalPopupProps) => {
       <div className="relative max-w-md w-full bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 rounded-[3rem] shadow-2xl overflow-hidden animate-scaleIn">
         <button
           onClick={handleClose}
-          className="absolute top-6 right-6 z-10 w-10 h-10 flex items-center justify-center bg-white/80 hover:bg-white rounded-full shadow-lg transition-all"
+          className="absolute top-6 right-6 z-[20] w-10 h-10 flex items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110 cursor-pointer"
           aria-label="Close"
+          type="button"
         >
-          <X className="w-5 h-5 text-gray-700" />
+          <X className="w-5 h-5 text-gray-700 pointer-events-none" />
         </button>
 
         <div className="relative p-8 pb-6">
