@@ -284,3 +284,63 @@ export interface BookingLocation {
   accuracy?: number;
   created_at: string;
 }
+
+export type OrderStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+export type OrderPaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed';
+
+export interface Order {
+  id: string;
+  booking_id?: string;
+  client_id: string;
+  service_type: string;
+  service_address: string;
+  service_date: string;
+  service_time: string;
+  status: OrderStatus;
+  total_amount: number;
+  payment_status: OrderPaymentStatus;
+  payment_intent_id?: string;
+  special_instructions?: string;
+  created_by_agent: boolean;
+  agent_session_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  service_name: string;
+  description?: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  created_at: string;
+}
+
+export interface OrderWithDetails extends Order {
+  client_name?: string;
+  client_email?: string;
+  client_phone?: string;
+  order_items?: OrderItem[];
+}
+
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+
+export interface Invoice {
+  id: string;
+  invoice_number: string;
+  order_id: string;
+  client_id: string;
+  issue_date: string;
+  due_date: string;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total_amount: number;
+  status: InvoiceStatus;
+  payment_date?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
